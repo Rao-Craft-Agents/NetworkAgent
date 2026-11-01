@@ -1,0 +1,9 @@
+{
+  "name": "Network",
+  "tagline": "An app's backend API layer: a typed Swift client package, from one compact line an endpoint.",
+  "category": "developer",
+  "keywords": ["swift", "networking", "api client", "rest", "codable", "rss", "granite", "loom"],
+  "platforms": ["macOS 14"],
+  "license": "MIT",
+  "description": "An app's backend API layer, written as a local Swift package from one compact line an endpoint. Say `GET /v1/recipes?page,per_page -> RecipePage as recipes paged` and `POST /v1/session body(Credentials) -> Session as signIn stores token`, with each type in the Models line; Network writes the typed client of that API: a Sendable client whose base URL changes while the app runs, a transport and a public mock, bearer, basic, header or query auth with tokens kept per host in the Keychain, JSON and multipart requests, a typed async method an endpoint, the DTOs, paging as an AsyncSequence (by page number, a cursor, or the Link header), errors with the server's message and the JSON key path, retries on 429 and 5xx with Retry-After, and RSS, Atom and JSON Feed when asked.\n\nEvery package comes with tests that run: each endpoint's request asserted and a sample answer decoded. The package is linked into the project's app targets, and a later call adds endpoints to it.\n\nNo model is asked: the same lines make the same package every time. A call it cannot honour is refused with every reason at once, and nothing is written until every file parses.\n\nOne of the Rao Craft Agents: independent packages that, tagged in prompts along the life of a project, build an app of Loom's quality. Swift 6, iOS 17 and macOS 14, no dependencies."
+}
