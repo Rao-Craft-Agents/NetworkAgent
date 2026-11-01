@@ -87,6 +87,11 @@ enum EntityLine {
         let bare = name.trimmingCharacters(in: CharacterSet(charactersIn: "`"))
         guard SwiftName.isMemberName(bare) else { throw NetworkError.line(line, "`\(name)` is not a field name (lowerCamelCase)") }
         let type = try parseType(typeText, in: line)
+        // A snake_case name is the JSON key, written in Swift's spelling: `comment_count` is `commentCount`, keyed
+        // `comment_count`, whatever `coding` says.
+        if bare.contains("_"), bare.trimmingCharacters(in: CharacterSet(charactersIn: "_")) == bare {
+            return Field(name: SwiftName.camel(bare), type: type, defaultValue: defaultValue, key: key ?? bare, doc: doc)
+        }
         return Field(name: bare, type: type, defaultValue: defaultValue, key: key, doc: doc)
     }
 
@@ -122,6 +127,11 @@ enum EntityLine {
         text = text.trimmingCharacters(in: CharacterSet(charactersIn: "`"))
         // An API's own spelling (`Hot`, `TopDay`, `NSFW`) is a case named in Swift's spelling that keeps the API's as its
         // raw value: `case topDay = "TopDay"`. Nothing else could be meant, so it is not refused.
+        if values.isEmpty, text.contains("_"), text.range(of: #"^[a-z][a-z0-9_]*[a-z0-9]$"#, options: .regularExpression) != nil {
+            // `top_day` is `case topDay = "top_day"`: the API's spelling kept as the raw value.
+            if raw == nil { raw = "\"\(text)\"" }
+            text = SwiftName.camel(text)
+        }
         if values.isEmpty, text.range(of: #"^[A-Z][A-Za-z0-9_]*$"#, options: .regularExpression) != nil {
             if raw == nil { raw = "\"\(text)\"" }
             text = SwiftName.lowerCamel(text)

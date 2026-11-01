@@ -98,3 +98,12 @@ final class LenientLineTests: XCTestCase {
         XCTAssertEqual(sort.cases.map(\.raw), ["\"Active\"", "\"Hot\"", "\"TopDay\""])
     }
 }
+
+/// snake_case fields said in Swift's spelling, keyed as written.
+final class SnakeCaseFieldTests: XCTestCase {
+    func testSnakeCaseFieldsAreCamelCasedAndKeyedAsWritten() throws {
+        let entity = try EntityLine.parse("Comment: id Int, post_id Int, parent_id Int?, created_at Date")
+        XCTAssertEqual(entity.fields.map(\.name), ["id", "postID", "parentID", "createdAt"])
+        XCTAssertEqual(entity.fields.map(\.key), [nil, "post_id", "parent_id", "created_at"])
+    }
+}

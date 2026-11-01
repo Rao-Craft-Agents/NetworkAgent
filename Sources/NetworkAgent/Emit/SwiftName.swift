@@ -47,4 +47,5 @@ enum SwiftName {
         let cut = upper == characters.count || upper == 1 ? upper : upper - 1
         return String(characters[..<cut]).lowercased() + String(characters[cut...])
     }
+
 }
