@@ -1,0 +1,19 @@
+{
+  "name": "Network",
+  "tagline": "An app's backend API layer: a typed Swift client package, from one compact line an endpoint.",
+  "category": "developer",
+  "keywords": [
+    "swift",
+    "networking",
+    "api client",
+    "rest",
+    "codable",
+    "rss",
+    "granite",
+    "loom"
+  ],
+  "platforms": [
+    "macOS 14"
+  ],
+  "license": "MIT"
+}
