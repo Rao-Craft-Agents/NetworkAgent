@@ -29,7 +29,10 @@ struct AppTypes {
         guard let walker = FileManager.default.enumerator(at: root, includingPropertiesForKeys: [.isDirectoryKey]) else { return }
         for case let url as URL in walker {
             let name = url.lastPathComponent
-            if skipped.contains(name) || name.hasPrefix(".") || name.hasSuffix(".xcodeproj") || name.hasSuffix(".xcassets") || name.hasSuffix("Tests") {
+            // Only a folder is skipped: on a file, skipDescendants skips the folder entered last, which hid a whole
+            // package from this reader (Margin, 2026-11-01).
+            let isFolder = (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false
+            if isFolder, skipped.contains(name) || name.hasPrefix(".") || name.hasSuffix(".xcodeproj") || name.hasSuffix(".xcassets") || name.hasSuffix("Tests") {
                 walker.skipDescendants(); continue
             }
             guard url.pathExtension == "swift", let text = try? String(contentsOf: url, encoding: .utf8) else { continue }
