@@ -133,7 +133,20 @@ public struct NetworkAgent: GraniteAgentPackage {
             throw NetworkError.refused(["`\(files.relative(folder))` already holds a package this agent did not write: give another `into`"])
         }
         let call = APIRecord.call(input, over: record)
-        let api = try API.resolve(call)
+        let api: API
+        do {
+            api = try API.resolve(call)
+        } catch NetworkError.refused(let reasons) {
+            // A type the app declares (`$models` wrote it) is out of a package's sight: offer its line, read off the
+            // app's declaration, so it is written once (Margin, 2026-11-01: eight refusals asked for the same types).
+            let app = AppTypes(root: files.root)
+            throw NetworkError.refused(reasons.map { reason in
+                guard reason.hasSuffix("which no entity line declares: add its line"),
+                      let name = reason.components(separatedBy: "`").dropLast().last.flatMap({ $0.isEmpty ? nil : $0 }),
+                      let line = app.entityLine(name) else { return reason }
+                return reason + ". The app declares it, and a package cannot see the app's types: add `\(line)`"
+            })
+        }
         yield(.read(endpoints: api.methods.count, types: api.entities.count))
         note("writing \(api.module) into \(files.relative(folder)): \(api.methods.count) endpoint\(api.methods.count == 1 ? "" : "s"), \(api.entities.count) type\(api.entities.count == 1 ? "" : "s")")
 

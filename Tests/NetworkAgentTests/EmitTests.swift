@@ -181,3 +181,20 @@ final class AgentFilesTests: XCTestCase {
         XCTAssertEqual(files.relative(URL(fileURLWithPath: "/elsewhere/x")), "/elsewhere/x")
     }
 }
+
+/// A type the app declares is offered as an entity line when the package needs it (Margin, 2026-11-01: `$models`
+/// wrote the app's types, and network refused eight times asking for them again).
+final class AppTypeOfferTests: XCTestCase {
+    func testARefusalOffersTheEntityLineOfATypeTheAppDeclares() throws {
+        let folder = try Fixture.folder()
+        let models = folder.appendingPathComponent("Shared/Models")
+        try FileManager.default.createDirectory(at: models, withIntermediateDirectories: true)
+        try "import Foundation\n\npublic struct Reader: Codable, Identifiable {\n    public var id: String\n    public var name: String\n    public var avatar: URL?\n}\n"
+            .write(to: models.appendingPathComponent("Reader.swift"), atomically: true, encoding: .utf8)
+        let input = NetworkAgent.Input(name: "ClubKit", baseURL: "https://api.example.com", endpoints: ["GET /v1/me -> Session as me"],
+                                       entities: ["Session: token String, reader Reader"], directory: folder.path)
+        XCTAssertThrowsError(try NetworkAgent.write(input, note: { _ in }, yield: { _ in })) { error in
+            XCTAssertTrue("\(error)".contains("The app declares it, and a package cannot see the app's types: add `Reader: id String, name String, avatar URL?`"), "\(error)")
+        }
+    }
+}
