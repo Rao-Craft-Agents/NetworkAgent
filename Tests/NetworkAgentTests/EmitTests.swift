@@ -197,4 +197,16 @@ final class AppTypeOfferTests: XCTestCase {
             XCTAssertTrue("\(error)".contains("The app declares it, and a package cannot see the app's types: add `Reader: id String, name String, avatar URL?`"), "\(error)")
         }
     }
+
+    /// A type the app declares under the package's name is called out: importing files would find two (Margin).
+    func testAnAppTypeOfAPackageTypesNameIsCalledOut() throws {
+        let folder = try Fixture.folder()
+        let models = folder.appendingPathComponent("Shared/Models")
+        try FileManager.default.createDirectory(at: models, withIntermediateDirectories: true)
+        try "struct Note: Codable {\n    var id: String\n}\n".write(to: models.appendingPathComponent("Note.swift"), atomically: true, encoding: .utf8)
+        let input = NetworkAgent.Input(name: "NoteKit", baseURL: "https://api.example.com", endpoints: ["GET /v1/notes/{id} -> Note as note"],
+                                       entities: ["Note: id String, text String"], link: false, directory: folder.path)
+        let result = try NetworkAgent.write(input, note: { _ in }, yield: { _ in })
+        XCTAssertTrue(result.notes.contains { $0.contains("The app also declares `Note` (Shared/Models/Note.swift)") }, "\(result.notes)")
+    }
 }

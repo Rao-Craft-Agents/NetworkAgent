@@ -148,6 +148,14 @@ public struct NetworkAgent: GraniteAgentPackage {
             })
         }
         yield(.read(endpoints: api.methods.count, types: api.entities.count))
+        // The app's own type of a name the package declares: files importing the package would find two (Margin,
+        // 2026-11-01: `$models` wrote the app a `Post`, and `[Post]` in a service no longer built).
+        let appTypes = AppTypes(root: files.root)
+        var clashes: [String] = []
+        for entity in api.entities {
+            guard let declared = appTypes.types[entity.name], declared.module == nil, let file = declared.file else { continue }
+            clashes.append("`\(entity.name)` (\(files.relative(file)))")
+        }
         note("writing \(api.module) into \(files.relative(folder)): \(api.methods.count) endpoint\(api.methods.count == 1 ? "" : "s"), \(api.entities.count) type\(api.entities.count == 1 ? "" : "s")")
 
         let made = PackageEmitter(api: api).files()
@@ -157,6 +165,10 @@ public struct NetworkAgent: GraniteAgentPackage {
 
         // The project the package is linked into: its Xcode projects and its manifest.
         var linked: [String] = [], notes: [String] = []
+        if !clashes.isEmpty {
+            notes.append("The app also declares \(clashes.joined(separator: ", ")): a file that imports \(api.module) would find two of each. "
+                         + "Delete the app's copies, so the app uses \(api.module)'s.")
+        }
         if input.link ?? true, folder.path != files.root.path {
             let manager = FileManager.default
             let projects = ((try? manager.contentsOfDirectory(atPath: files.root.path)) ?? []).filter { $0.hasSuffix(".xcodeproj") }.sorted()

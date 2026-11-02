@@ -13,6 +13,8 @@ struct AppTypes {
         var fields: [(name: String, type: String)] = []
         /// The local package's module that declares it; nil for the app's own.
         var module: String?
+        /// The file that declares it.
+        var file: URL?
 
         func field(_ name: String) -> String? { fields.first { $0.name == name }?.type }
     }
@@ -31,12 +33,12 @@ struct AppTypes {
                 walker.skipDescendants(); continue
             }
             guard url.pathExtension == "swift", let text = try? String(contentsOf: url, encoding: .utf8) else { continue }
-            read(text, module: Self.module(of: url))
+            read(text, module: Self.module(of: url), file: url)
         }
     }
 
     /// The declarations of one file: a type at the start of a line, its stored `let`/`var` fields one level in.
-    mutating func read(_ text: String, module: String?) {
+    mutating func read(_ text: String, module: String?, file: URL? = nil) {
         let lines = text.components(separatedBy: "\n")
         let declaration = #"^(?:(?:public|internal|fileprivate|private|open|final|@\w+)\s+)*(struct|class|enum|actor)\s+([A-Z][A-Za-z0-9_]*)"#
         let field = #"^\s+(?:(?:public|internal|fileprivate|private|open|@\w+(?:\([^)]*\))?)\s+)*(?:let|var)\s+([a-z_][A-Za-z0-9_]*)\s*:\s*([^={]+?)\s*(?:=.*)?$"#
@@ -47,7 +49,7 @@ struct AppTypes {
             if depth == 0, let match = line.range(of: declaration, options: .regularExpression) {
                 close()
                 let words = line[match].split(separator: " ")
-                if let name = words.last.map(String.init) { current = Declared(name: name, module: module) }
+                if let name = words.last.map(String.init) { current = Declared(name: name, module: module, file: file) }
             } else if depth == 1, current != nil, !line.contains("static "), !line.contains("{"),
                       let match = line.range(of: field, options: .regularExpression) {
                 let text = String(line[match])
