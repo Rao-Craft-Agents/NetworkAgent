@@ -1,7 +1,8 @@
 import Foundation
+import GraniteAgents
 
 /// What a call answers: the files written, as absolute paths, and what the package now offers.
-public struct NetworkResult: Codable, Sendable, Equatable {
+public struct NetworkResult: AgentAnswer, Equatable {
     /// The client's file.
     public var path: String?
     /// Every file written: the package's, and a project or manifest the package was linked into.
