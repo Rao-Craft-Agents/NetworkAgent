@@ -1,0 +1,85 @@
+{
+  "$id" : "https://github.com/Rao-Craft-Agents/NetworkAgent/blob/main/Schema/network.input.schema.json",
+  "$schema" : "https://json-schema.org/draft/2020-12/schema",
+  "description" : "Every field a call to network may give; `directory` is Craft's, never the model's.",
+  "properties" : {
+    "auth" : {
+      "description" : "how requests are signed: bearer (OAuth, JWT), basic, header or query (both named in authName), none; bearer when a line stores a token",
+      "enum" : [
+        "none",
+        "bearer",
+        "basic",
+        "header",
+        "query"
+      ],
+      "type" : "string"
+    },
+    "authName" : {
+      "description" : "the header (`X-API-Key`) or query parameter (`api_key`) the token goes in, for auth header or query",
+      "type" : "string"
+    },
+    "baseURL" : {
+      "description" : "where the client sends unless told otherwise, `https://api.recipes.example`; the app may change it while it runs",
+      "type" : "string"
+    },
+    "coding" : {
+      "description" : "snake for snake_case JSON keys; exact when left out",
+      "enum" : [
+        "exact",
+        "snake"
+      ],
+      "type" : "string"
+    },
+    "dates" : {
+      "description" : "date formats the API writes beside ISO 8601, as patterns (`yyyy-MM-dd HH:mm:ss`), or `seconds` or `milliseconds` for numbers",
+      "items" : {
+        "type" : "string"
+      },
+      "type" : "array"
+    },
+    "endpoints" : {
+      "description" : "one line an endpoint: `GET /v1/recipes/{id:Int}?full:Bool -> Recipe as recipe`, then `body(Type)` or `multipart(photo, caption:String?)`, `paged`, `stores token`, a quoted doc",
+      "items" : {
+        "type" : "string"
+      },
+      "type" : "array"
+    },
+    "entities" : {
+      "description" : "the types the endpoints send and answer, one line each: `Recipe \"a dish\": id Int, title String, minutes Int = 30, course Course?`; an enum is `Course: starter | main | dessert`",
+      "items" : {
+        "type" : "string"
+      },
+      "type" : "array"
+    },
+    "feeds" : {
+      "description" : "whether the client reads RSS, Atom and JSON Feed with `feed(at:)`; false when left out",
+      "type" : "boolean"
+    },
+    "into" : {
+      "description" : "the package's folder, relative to the project; Packages/<name> when left out",
+      "type" : "string"
+    },
+    "link" : {
+      "description" : "whether the package is linked into the project's app targets (an .xcodeproj) or its Package.swift; true when left out",
+      "type" : "boolean"
+    },
+    "name" : {
+      "description" : "the package, its library and module: `RecipeKit` (its types drop Kit: `RecipeClient`); API when left out",
+      "type" : "string"
+    },
+    "paging" : {
+      "description" : "page (a `page` number in the query) or cursor (a `cursor`, `page_cursor`, `max_id`, `after` or `page_token` query; the next one from the response or its Link header); read from the lines when left out",
+      "enum" : [
+        "none",
+        "page",
+        "cursor"
+      ],
+      "type" : "string"
+    }
+  },
+  "required" : [
+
+  ],
+  "title" : "What network takes (craft-agent/1)",
+  "type" : "object"
+}
